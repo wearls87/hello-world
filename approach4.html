@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Price Support — Approach 4: Campaign Timeline + Side Drawer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body, #root { height: 100%; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const C=[
+  {id:"PB-2026-01",n:"New Year Kickoff",d:"Sitewide 30% off to clear holiday inventory",s:"Jan 5",e:"Jan 11",sd:5,ed:11,dv:"Women's",dp:"Tops",cl:"Knits",sub:"Sweaters",sty:"Classic Crew",w:"RW01",$:"$3.1M",u:"98K",g:"41.2%",t:"+6%",cv:"4.1%",ar:"$31.63",dr:"30%",up:"2.4",st:"Complete"},
+  {id:"PB-2026-02",n:"Winter Clearance",d:"Finals 50-70% off fall/winter seasonal",s:"Jan 12",e:"Jan 25",sd:12,ed:25,dv:"Men's",dp:"Outerwear",cl:"Jackets",sub:"Puffers",sty:"Hooded Puffer",w:"RW02–03",$:"$5.8M",u:"210K",g:"22.4%",t:"+18%",cv:"5.3%",ar:"$27.62",dr:"58%",up:"3.1",st:"Complete"},
+  {id:"PB-2026-03",n:"Valentine's Preview",d:"25% off dresses & accessories",s:"Jan 26",e:"Feb 1",sd:26,ed:32,dv:"Women's",dp:"Dresses",cl:"Occasion",sub:"Date Night",sty:"Midi Wrap",w:"RW04",$:"$2.4M",u:"72K",g:"44.1%",t:"+4%",cv:"3.8%",ar:"$33.33",dr:"25%",up:"2.1",st:"Complete"},
+  {id:"PB-2026-04",n:"Valentine's Day Event",d:"BOGO 50% sitewide + free shipping",s:"Feb 9",e:"Feb 15",sd:40,ed:46,dv:"Accessories",dp:"Jewelry",cl:"Fashion Jewelry",sub:"Necklaces",sty:"Pendant Set",w:"RW06",$:"$4.6M",u:"165K",g:"32.8%",t:"+22%",cv:"5.6%",ar:"$27.88",dr:"42%",up:"3.4",st:"Complete"},
+  {id:"PB-2026-05",n:"Presidents Day Wknd",d:"Up to 40% off + doorbuster basics",s:"Feb 14",e:"Feb 17",sd:45,ed:48,dv:"Men's",dp:"Bottoms",cl:"Denim",sub:"Straight Fit",sty:"Classic Straight",w:"RW07",$:"$3.9M",u:"118K",g:"36.5%",t:"+12%",cv:"4.9%",ar:"$33.05",dr:"38%",up:"2.7",st:"Complete"},
+  {id:"PB-2026-06",n:"Spring Preview",d:"New arrivals 20% off first purchase",s:"Feb 23",e:"Mar 1",sd:54,ed:60,dv:"Women's",dp:"Tops",cl:"Woven",sub:"Blouses",sty:"Floral Button-Up",w:"RW08–09",$:"$2.8M",u:"84K",g:"48.2%",t:"+3%",cv:"3.5%",ar:"$33.33",dr:"20%",up:"2.0",st:"Complete"},
+  {id:"PB-2026-07",n:"Friends & Family",d:"40% off entire purchase for loyalty members",s:"Mar 2",e:"Mar 8",sd:61,ed:67,dv:"All",dp:"All",cl:"All",sub:"All",sty:"All",w:"RW09–10",$:"$8.2M",u:"285K",g:"29.6%",t:"+24%",cv:"5.8%",ar:"$28.77",dr:"40%",up:"3.6",st:"Complete"},
+  {id:"PB-2026-08",n:"Spring Break",d:"35% off swim, shorts, sandals",s:"Mar 9",e:"Mar 22",sd:68,ed:81,dv:"Women's",dp:"Swim",cl:"One-Piece",sub:"Solid",sty:"Scoop One-Piece",w:"RW10–12",$:"$6.1M",u:"192K",g:"33.8%",t:"+16%",cv:"5.0%",ar:"$31.77",dr:"35%",up:"2.9",st:"Complete"},
+  {id:"PB-2026-09",n:"Spring Kickoff",d:"Multi-category spring launch",s:"Mar 2",e:"Mar 15",sd:61,ed:74,dv:"Women's",dp:"Denim",cl:"Skinny",sub:"Mid Rise",sty:"Classic Skinny",w:"RW09–10",$:"$4.2M",u:"142K",g:"38.2%",t:"+8%",cv:"4.6%",ar:"$29.58",dr:"32%",up:"2.8",st:"Complete"},
+  {id:"PB-2026-10",n:"BOGO Denim",d:"Buy One Get One free all denim",s:"Mar 16",e:"Mar 22",sd:75,ed:81,dv:"Women's",dp:"Bottoms",cl:"Denim",sub:"All Fits",sty:"All Styles",w:"RW11–12",$:"$1.9M",u:"62K",g:"26.8%",t:"+14%",cv:"5.2%",ar:"$30.65",dr:"50%",up:"2.4",st:"Complete"},
+  {id:"PB-2026-11",n:"Easter Weekend",d:"Everything 50% off sitewide",s:"Mar 23",e:"Apr 5",sd:82,ed:95,dv:"All",dp:"All",cl:"All",sub:"All",sty:"All",w:"RW12–14",$:"$5.1M",u:"198K",g:"28.4%",t:"+16%",cv:"5.1%",ar:"$25.76",dr:"50%",up:"3.2",st:"Active"},
+  {id:"PB-2026-12",n:"Spring Refresh",d:"Targeted markdowns + 25% off",s:"Apr 6",e:"Apr 19",sd:96,ed:109,dv:"Women's",dp:"Tops",cl:"Tees",sub:"Graphic",sty:"Spring Logo Tee",w:"RW14–15",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"25%",up:"—",st:"Upcoming"},
+  {id:"PB-2026-13",n:"$5 Dresses",d:"Doorbuster $5 dress event",s:"Apr 20",e:"Apr 26",sd:110,ed:116,dv:"Women's",dp:"Dresses",cl:"Casual",sub:"Sundress",sty:"Tiered Mini",w:"RW16",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"61%",up:"—",st:"Upcoming"},
+  {id:"PB-2026-14",n:"Earth Day Capsule",d:"Sustainable collection 15% off",s:"Apr 22",e:"Apr 26",sd:112,ed:116,dv:"Women's",dp:"Tops",cl:"Knits",sub:"Organic Cotton",sty:"Earth Crew",w:"RW16",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"15%",up:"—",st:"Upcoming"},
+  {id:"PB-2026-15",n:"Mother's Day",d:"30% off + curated bundles",s:"May 4",e:"May 10",sd:124,ed:130,dv:"Accessories",dp:"Handbags",cl:"Crossbody",sub:"Leather",sty:"Classic Crossbody",w:"RW18",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"30%",up:"—",st:"Planned"},
+  {id:"PB-2026-16",n:"Memorial Day",d:"Up to 50% off sitewide",s:"May 23",e:"May 26",sd:143,ed:146,dv:"All",dp:"All",cl:"All",sub:"All",sty:"All",w:"RW21",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"50%",up:"—",st:"Planned"},
+  {id:"PB-2026-17",n:"Summer Kickoff",d:"20% off new summer arrivals",s:"Jun 1",e:"Jun 14",sd:152,ed:165,dv:"Men's",dp:"Shorts",cl:"Casual",sub:"Chino Short",sty:"7-inch Chino",w:"RW22–23",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"20%",up:"—",st:"Planned"},
+  {id:"PB-2026-18",n:"Fourth of July",d:"Sitewide 40% off holiday",s:"Jul 1",e:"Jul 5",sd:182,ed:186,dv:"All",dp:"All",cl:"All",sub:"All",sty:"All",w:"RW27",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"40%",up:"—",st:"Planned"},
+  {id:"PB-2026-19",n:"Mid-Summer MD",d:"Furthers 40-60% off for BTS",s:"Jul 13",e:"Jul 26",sd:194,ed:207,dv:"Women's",dp:"Swim",cl:"Bikini",sub:"Triangle",sty:"Floral Triangle",w:"RW28–29",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"55%",up:"—",st:"Planned"},
+  {id:"PB-2026-20",n:"Back to School",d:"25% off kids' BTS launch",s:"Jul 27",e:"Aug 9",sd:208,ed:221,dv:"Kids",dp:"Tops & Bottoms",cl:"Uniform",sub:"Polo",sty:"Classic Polo",w:"RW30–31",$:"—",u:"—",g:"—",t:"—",cv:"—",ar:"—",dr:"25%",up:"—",st:"Planned"}
+];
+const LY=[{n:"New Year Sale",$:"$2.6M",g:"43.1%",dr:"25%"},{n:"Winter Clearance",$:"$4.9M",g:"20.8%",dr:"60%"},{n:"Valentine's Preview",$:"$1.9M",g:"45.8%",dr:"20%"},{n:"Valentine's Day",$:"$3.8M",g:"34.2%",dr:"40%"},{n:"Presidents Day",$:"$3.2M",g:"38.1%",dr:"35%"},{n:"Spring Preview",$:"$2.1M",g:"49.5%",dr:"15%"},{n:"Friends & Family",$:"$6.8M",g:"31.4%",dr:"35%"},{n:"Spring Break",$:"$4.8M",g:"35.6%",dr:"30%"},{n:"Spring Event",$:"$3.5M",g:"40.1%",dr:"28%"},{n:"Denim BOGO",$:"$1.5M",g:"28.4%",dr:"50%"},{n:"Easter Weekend",$:"$4.4M",g:"30.2%",dr:"40%"},{n:"Spring Markdowns",$:"$1.8M",g:"38.5%",dr:"25%"},{n:"$5 Dresses",$:"$1.8M",g:"18.2%",dr:"62%"},null,{n:"Mother's Day",$:"$2.1M",g:"42.3%",dr:"25%"},{n:"Memorial Day",$:"$5.6M",g:"30.1%",dr:"45%"},{n:"Summer Launch",$:"$2.4M",g:"46.2%",dr:"15%"},{n:"Fourth of July",$:"$4.8M",g:"32.4%",dr:"35%"},{n:"Summer Clearance",$:"$3.2M",g:"21.6%",dr:"52%"},{n:"BTS Early",$:"$3.6M",g:"39.8%",dr:"20%"}];
+
+const sC=s=>({Complete:"#16a34a",Active:"#2563eb",Upcoming:"#d97706",Planned:"#64748b"}[s]);
+const sBg=s=>({Complete:"#dcfce7",Active:"#dbeafe",Upcoming:"#fef3c7",Planned:"#f1f5f9"}[s]);
+const total = 225;
+
+function App() {
+  const [sel, setSel] = useState(null);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"];
+  const mDays = [0,31,59,90,120,151,181,212];
+  const today = 97;
+
+  return React.createElement('div', {style:{display:"flex",height:"100vh",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:"#1e293b"}},
+    React.createElement('div', {style:{flex:1,display:"flex",flexDirection:"column"}},
+      React.createElement('div', {style:{background:"#1e1b4b",color:"#fff",padding:"14px 20px"}},
+        React.createElement('div', {style:{fontWeight:700,fontSize:16}}, "\ud83d\udcc5 Campaign Timeline — 2026 Season"),
+        React.createElement('div', {style:{fontSize:11,opacity:.7,marginTop:2}}, "Approach 4: Visual timeline with side drawer · Click any campaign bar")
+      ),
+      React.createElement('div', {style:{display:"flex",borderBottom:"1px solid #e2e8f0",background:"#f8fafc"}},
+        months.map((m,i)=>React.createElement('div', {key:i, style:{flex:1,textAlign:"center",fontSize:10,fontWeight:700,color:"#64748b",borderRight:i<7?"1px solid #e2e8f0":"",padding:"6px 0"}}, m))
+      ),
+      React.createElement('div', {style:{position:"relative",borderBottom:"1px solid #e2e8f0",height:4,background:"#f1f5f9"}},
+        React.createElement('div', {style:{position:"absolute",left:(today/total)*100+"%",top:0,width:2,height:4,background:"#dc2626"}})
+      ),
+      React.createElement('div', {style:{flex:1,overflow:"auto",padding:"10px 16px"}},
+        C.map((c,i)=>{
+          const left = (c.sd / total) * 100;
+          const width = Math.max(((c.ed - c.sd + 1) / total) * 100, 3);
+          const salesVal = c.$!=="—" ? parseFloat(c.$.replace(/[$M,]/g,"")) : 0;
+          const barH = Math.max(22, Math.min(38, 10 + salesVal * 3.5));
+          const isSelected = sel === i;
+          const color = sC(c.st);
+          return React.createElement('div', {key:i, style:{position:"relative",height:barH + 12,marginBottom:2}},
+            React.createElement('div', {onClick:()=>setSel(isSelected?null:i), style:{
+              position:"absolute",left:left+"%",width:width+"%",top:"50%",transform:"translateY(-50%)",
+              height:barH,background:isSelected?color:color+"18",
+              border:"2px solid "+color,borderRadius:6,cursor:"pointer",
+              display:"flex",alignItems:"center",padding:"0 8px",overflow:"hidden",
+              transition:"all 0.15s",minWidth:60,boxShadow:isSelected?"0 2px 8px rgba(0,0,0,0.15)":"none"
+            }},
+              React.createElement('span', {style:{fontSize:10,fontWeight:700,color:isSelected?"#fff":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},
+                c.n+(c.$!=="—"?" · "+c.$:"")
+              )
+            )
+          );
+        })
+      ),
+      React.createElement('div', {style:{padding:"8px 20px",borderTop:"1px solid #e2e8f0",display:"flex",gap:16,fontSize:10,alignItems:"center"}},
+        [["Complete","#16a34a"],["Active","#2563eb"],["Upcoming","#d97706"],["Planned","#64748b"]].map(([l,c],i)=>
+          React.createElement('div', {key:i, style:{display:"flex",alignItems:"center",gap:4}},
+            React.createElement('div', {style:{width:12,height:12,borderRadius:3,border:"2px solid "+c,background:c+"18"}}),
+            React.createElement('span', null, l+" ("+C.filter(x=>x.st===l).length+")")
+          )
+        ),
+        React.createElement('div', {style:{display:"flex",alignItems:"center",gap:4,marginLeft:"auto"}},
+          React.createElement('div', {style:{width:12,height:2,background:"#dc2626"}}),
+          React.createElement('span', null, "Today")
+        )
+      )
+    ),
+    sel!==null&&React.createElement('div', {style:{width:380,borderLeft:"1px solid #e2e8f0",display:"flex",flexDirection:"column",overflow:"auto",background:"#fff"}},
+      React.createElement('div', {style:{padding:"14px 18px",borderBottom:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"flex-start"}},
+        React.createElement('div', null,
+          React.createElement('div', {style:{fontWeight:700,fontSize:16}}, C[sel].n),
+          React.createElement('div', {style:{fontSize:11,color:"#64748b",marginTop:2}}, C[sel].id+" · "+C[sel].s+" – "+C[sel].e+" · "+C[sel].w)
+        ),
+        React.createElement('button', {onClick:()=>setSel(null), style:{background:"none",border:"none",cursor:"pointer",fontSize:18,color:"#94a3b8",padding:"0 4px"}}, "\u2715")
+      ),
+      React.createElement('div', {style:{padding:18}},
+        React.createElement('div', {style:{fontSize:13,color:"#475569",marginBottom:14,lineHeight:1.5}}, C[sel].d),
+        React.createElement('div', {style:{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}},
+          [["Division",C[sel].dv],["Department",C[sel].dp],["Class",C[sel].cl],["Subclass",C[sel].sub],["Style",C[sel].sty]].map(([l,v],i)=>
+            React.createElement('span', {key:i, style:{background:"#eef2ff",borderRadius:6,padding:"3px 8px",fontSize:10}}, React.createElement('span', {style:{color:"#6366f1",fontWeight:600}}, l+":"), " "+v)
+          ),
+          React.createElement('span', {style:{background:sBg(C[sel].st),borderRadius:6,padding:"3px 8px",fontSize:10,color:sC(C[sel].st),fontWeight:600}}, C[sel].st)
+        ),
+        C[sel].$!=="—"&&React.createElement(React.Fragment, null,
+          React.createElement('div', {style:{fontWeight:700,fontSize:12,marginBottom:8}}, "Performance Metrics"),
+          React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}},
+            [["Sales $",C[sel].$],["Units",C[sel].u],["GM%",C[sel].g],["Conv",C[sel].cv],["Traffic",C[sel].t],["AUR",C[sel].ar],["D/R",C[sel].dr],["UPT",C[sel].up]].map(([l,v],i)=>
+              React.createElement('div', {key:i, style:{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:6,padding:"8px 10px"}},
+                React.createElement('div', {style:{fontSize:9,color:"#64748b"}}, l),
+                React.createElement('div', {style:{fontWeight:700,fontSize:15,color:v==="—"?"#cbd5e1":"#1e293b"}}, v)
+              )
+            )
+          )
+        ),
+        React.createElement('div', {style:{fontWeight:700,fontSize:12,marginBottom:8}}, "LY Comparison"),
+        LY[sel]?React.createElement('div', {style:{background:"#f5f5f4",border:"1px solid #d6d3d1",borderRadius:8,padding:14,marginBottom:16}},
+          React.createElement('div', {style:{fontWeight:600,marginBottom:8,fontSize:12}}, LY[sel].n),
+          React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}},
+            [["Sales",C[sel].$,LY[sel].$],["GM%",C[sel].g,LY[sel].g],["D/R",C[sel].dr,LY[sel].dr]].map(([l,ty,lyv],i)=>
+              React.createElement('div', {key:i, style:{textAlign:"center",background:"#fff",borderRadius:6,padding:8}},
+                React.createElement('div', {style:{fontSize:9,color:"#78716c"}}, l),
+                React.createElement('div', {style:{fontWeight:700,fontSize:13}}, ty),
+                React.createElement('div', {style:{fontSize:10,color:"#a8a29e"}}, "LY: "+lyv)
+              )
+            )
+          )
+        ):React.createElement('div', {style:{background:"#fef3c7",border:"1px solid #fde68a",borderRadius:8,padding:14,textAlign:"center",marginBottom:16}},
+          React.createElement('div', {style:{fontWeight:700,color:"#92400e",fontSize:12}}, "\ud83d\udced No LY Campaign")
+        ),
+        React.createElement('div', {style:{background:C[sel].g!=="—"&&parseFloat(C[sel].g)<30?"#fef2f2":"#f0fdf4",border:"1px solid "+(C[sel].g!=="—"&&parseFloat(C[sel].g)<30?"#fecaca":"#bbf7d0"),borderRadius:8,padding:14}},
+          React.createElement('div', {style:{fontWeight:700,fontSize:12,marginBottom:4}}, "\ud83e\udd16 Recommendation"),
+          React.createElement('div', {style:{fontSize:12,lineHeight:1.5,color:"#475569"}},
+            C[sel].$!=="—"?(parseFloat(C[sel].g)<30?"Margin at "+C[sel].g+" is below 30% target. Pull back D/R by 5-10% for next similar event. "+(parseFloat(C[sel].up)>2.5?"The mechanic is driving baskets (UPT "+C[sel].up+") — shift to a less aggressive tier.":"Consider bundle mechanic to improve baskets without pure price reduction."):"Solid results at "+C[sel].g+" GM%. "+(parseFloat(C[sel].up)>2.5?"UPT "+C[sel].up+" confirms the mechanic is working.":"Test a BOGO or bundle to lift basket size.")+" Maintain approach for future comparable events."):(LY[sel]?"LY ran "+LY[sel].n+" at "+LY[sel].dr+" \u2192 "+LY[sel].$+". "+(parseInt(C[sel].dr)>parseInt(LY[sel].dr)?"Going deeper this year — watch margin.":"Consistent with LY depth.")+" Set targets using LY as benchmark.":"No LY benchmark. Start with conservative D/R, read week 1, then adjust.")
+          )
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Price Support — Approach 5: Split Analytics + Recommendations</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body, #root { height: 100%; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const N=["New Year Kickoff","Winter Clearance","Valentine's Preview","Valentine's Day","Presidents Day","Spring Preview","Friends & Family","Spring Break","Spring Kickoff","BOGO Denim","Easter Weekend","Spring Refresh","$5 Dresses","Earth Day Capsule","Mother's Day","Memorial Day","Summer Kickoff","Fourth of July","Mid-Summer MD","Back to School"];
+const DT=["Jan 5–11","Jan 12–25","Jan 26–Feb 1","Feb 9–15","Feb 14–17","Feb 23–Mar 1","Mar 2–8","Mar 9–22","Mar 2–15","Mar 16–22","Mar 23–Apr 5","Apr 6–19","Apr 20–26","Apr 22–26","May 4–10","May 23–26","Jun 1–14","Jul 1–5","Jul 13–26","Jul 27–Aug 9"];
+const DV=["Women's","Men's","Women's","Acc","Men's","Women's","All","Women's","Women's","Women's","All","Women's","Women's","Women's","Acc","All","Men's","All","Women's","Kids"];
+const SL=["$3.1M","$5.8M","$2.4M","$4.6M","$3.9M","$2.8M","$8.2M","$6.1M","$4.2M","$1.9M","$5.1M","—","—","—","—","—","—","—","—","—"];
+const GM=["41.2%","22.4%","44.1%","32.8%","36.5%","48.2%","29.6%","33.8%","38.2%","26.8%","28.4%","—","—","—","—","—","—","—","—","—"];
+const DR=["30%","58%","25%","42%","38%","20%","40%","35%","32%","50%","50%","25%","61%","15%","30%","50%","20%","40%","55%","25%"];
+const ST=["C","C","C","C","C","C","C","C","C","C","A","U","U","U","P","P","P","P","P","P"];
+
+const SX={C:"Complete",A:"Active",U:"Upcoming",P:"Planned"};
+const clr={C:"#16a34a",A:"#2563eb",U:"#d97706",P:"#64748b"};
+const bgc={C:"#dcfce7",A:"#dbeafe",U:"#fef3c7",P:"#f1f5f9"};
+const rb={a:"#fef2f2",w:"#fef3c7",g:"#f0fdf4",i:"#eef2ff"};
+const rbr={a:"#fecaca",w:"#fde68a",g:"#bbf7d0",i:"#c7d2fe"};
+
+const pR=[
+  ["\ud83d\udcca","Promo Mix Heavier","62% promo vs 57% LY.","w"],
+  ["\u26a0\ufe0f","3 Below 30% GM","Winter, BOGO, Easter.","a"],
+  ["\ud83c\udfaf","F&F Best ROI","$8.2M, loyalty outperforms.","g"],
+  ["\ud83d\udce6","Basics WOH Heavy","16wk vs 12 target.","a"],
+  ["\ud83d\udcc5","Spring Refresh","LY: $1.8M at 25%.","i"],
+  ["\ud83d\udcc8","Traffic Gap","+17% traffic, flat conv.","w"]
+];
+
+function cR(i){
+  if(SL[i]==="—") return [["\ud83d\udccb","Pre-Launch","Set targets from LY data.","i"]];
+  const g=parseFloat(GM[i]);
+  const r=[];
+  r.push(g<30?["\u26a0\ufe0f","Margin Low","GM% "+GM[i]+". Reduce D/R.","a"]:["\u2705","Margin OK","GM% "+GM[i]+" on target.","g"]);
+  r.push(["\ud83d\udcc8","D/R Analysis","Running at "+DR[i]+" discount rate.","i"]);
+  return r;
+}
+
+function App(){
+  const [s,setS]=useState(null);
+  const [f,setF]=useState("All");
+  const recs=s!==null?cR(s):pR;
+  const vis=[];
+  for(let i=0;i<20;i++){if(f==="All"||SX[ST[i]]===f)vis.push(i);}
+
+  return React.createElement('div', {style:{display:"flex",height:"100vh",fontFamily:"system-ui",color:"#1e293b"}},
+    React.createElement('div', {style:{flex:1,borderRight:"1px solid #e2e8f0",display:"flex",flexDirection:"column"}},
+      React.createElement('div', {style:{background:"#1e1b4b",color:"#fff",padding:"10px 16px",display:"flex",justifyContent:"space-between"}},
+        React.createElement('div', null,
+          React.createElement('div', {style:{fontWeight:700,fontSize:14}}, "\ud83d\udcca Analytics"),
+          React.createElement('div', {style:{fontSize:10,opacity:.7}}, "Split view · Click campaign for detail")
+        ),
+        s!==null&&React.createElement('button', {onClick:()=>setS(null), style:{background:"rgba(255,255,255,.2)",border:"none",color:"#fff",borderRadius:6,padding:"4px 10px",fontSize:10,cursor:"pointer"}}, "\u2190 All")
+      ),
+      s===null?React.createElement('div', {style:{flex:1,overflow:"auto"}},
+        React.createElement('div', {style:{padding:"6px 12px",display:"flex",gap:3}},
+          ["All","Complete","Active","Upcoming","Planned"].map(x=>
+            React.createElement('button', {key:x, onClick:()=>setF(x), style:{padding:"2px 8px",borderRadius:8,fontSize:9,background:f===x?"#4f46e5":"#fff",color:f===x?"#fff":"#64748b",border:"1px solid "+(f===x?"#4f46e5":"#ccc"),cursor:"pointer",fontWeight:f===x?700:400}}, x)
+          )
+        ),
+        React.createElement('table', {style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
+          React.createElement('thead', null,
+            React.createElement('tr', {style:{background:"#f8fafc"}},
+              ["","Campaign","Dates","Div","Sales","GM%","D/R"].map((h,j)=>
+                React.createElement('th', {key:j, style:{padding:"5px 8px",textAlign:"left",fontWeight:700,color:"#475569",borderBottom:"2px solid #e2e8f0"}}, h)
+              )
+            )
+          ),
+          React.createElement('tbody', null,
+            vis.map(i=>
+              React.createElement('tr', {key:i, onClick:()=>setS(i), style:{cursor:"pointer",borderBottom:"1px solid #f1f5f9"}},
+                React.createElement('td', {style:{padding:"4px 8px"}}, React.createElement('span', {style:{fontSize:8,fontWeight:600,padding:"2px 5px",borderRadius:5,background:bgc[ST[i]],color:clr[ST[i]]}}, SX[ST[i]])),
+                React.createElement('td', {style:{padding:"4px 8px",fontWeight:600}}, N[i]),
+                React.createElement('td', {style:{padding:"4px 8px",color:"#64748b"}}, DT[i]),
+                React.createElement('td', {style:{padding:"4px 8px"}}, DV[i]),
+                React.createElement('td', {style:{padding:"4px 8px",fontWeight:600}}, SL[i]),
+                React.createElement('td', {style:{padding:"4px 8px",color:GM[i]!=="—"&&parseFloat(GM[i])<30?"#dc2626":""}}, GM[i]),
+                React.createElement('td', {style:{padding:"4px 8px"}}, DR[i])
+              )
+            )
+          )
+        )
+      ):React.createElement('div', {style:{flex:1,overflow:"auto",padding:16}},
+        React.createElement('div', {style:{fontWeight:700,fontSize:16}}, N[s]),
+        React.createElement('div', {style:{fontSize:11,color:"#64748b",marginBottom:12}}, DT[s]+" · "+DV[s]+" · D/R "+DR[s]),
+        SL[s]!=="—"?React.createElement('div', {style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}},
+          [["Sales",SL[s]],["GM%",GM[s]],["D/R",DR[s]]].map(([l,v],j)=>
+            React.createElement('div', {key:j, style:{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:6,padding:10,textAlign:"center"}},
+              React.createElement('div', {style:{fontSize:9,color:"#64748b"}}, l),
+              React.createElement('div', {style:{fontWeight:700,fontSize:16}}, v)
+            )
+          )
+        ):React.createElement('div', {style:{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:8,padding:14,textAlign:"center",color:"#64748b"}}, "No performance data yet · Planned D/R: "+DR[s])
+      )
+    ),
+    React.createElement('div', {style:{width:280,display:"flex",flexDirection:"column",background:"#fafaf9"}},
+      React.createElement('div', {style:{background:"#4f46e5",color:"#fff",padding:"10px 14px"}},
+        React.createElement('div', {style:{fontWeight:700,fontSize:13}}, "\ud83e\udd16 Recommendations"),
+        React.createElement('div', {style:{fontSize:10,opacity:.8,marginTop:2}}, s!==null?N[s]:"Portfolio Insights")
+      ),
+      React.createElement('div', {style:{flex:1,overflow:"auto",padding:10,display:"flex",flexDirection:"column",gap:6}},
+        recs.map((r,i)=>
+          React.createElement('div', {key:i, style:{background:rb[r[3]],border:"1px solid "+rbr[r[3]],borderRadius:6,padding:10}},
+            React.createElement('div', {style:{fontWeight:700,fontSize:11,marginBottom:2}}, r[0]+" "+r[1]),
+            React.createElement('div', {style:{fontSize:10,color:"#475569"}}, r[2])
+          )
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
